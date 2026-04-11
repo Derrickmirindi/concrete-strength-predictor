@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CNN Concrete Compressive Strength Predictor</title>
+<title>CNN Silica Fume Concrete Compressive Strength Predictor</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -79,28 +79,20 @@ h1 {
 .strength-bar { height: 12px; border-radius: 6px; margin: 12px 0; background: rgba(255,255,255,0.1); overflow: hidden; }
 .strength-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: width 0.6s ease; }
 .strength-label { font-size: 0.85em; color: #64ffda; margin-top: 4px; }
-.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 15px; }
-.stat { text-align: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
-.stat .sv { font-size: 1.1em; font-weight: 700; color: #00d2ff; }
-.stat .sl { font-size: 0.7em; color: #5a6a8a; margin-top: 3px; }
-.status-box {
+.credits {
   text-align: center;
-  padding: 15px;
-  background: rgba(0,210,255,0.05);
-  border: 1px solid rgba(0,210,255,0.2);
-  border-radius: 10px;
-  margin-bottom: 15px;
-  font-size: 0.9em;
+  padding: 20px;
+  font-size: 0.85em;
   color: #8892b0;
+  line-height: 1.8;
 }
-.progress-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 8px; }
-.progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: width 0.3s; }
-.info { font-size: 0.8em; color: #5a6a8a; text-align: center; margin-top: 20px; line-height: 1.6; }
+.credits a { color: #64ffda; text-decoration: none; }
+.credits a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>CNN Concrete Compressive Strength Predictor</h1>
+  <h1>CNN Silica Fume Concrete Compressive Strength Predictor</h1>
   <p class="subtitle">1D-CNN trained with TensorFlow.js &mdash; 6 mix variables &mdash; Conv1D(32) &rarr; Conv1D(64) &rarr; Dense(128) &rarr; Output</p>
 
   <div class="card">
@@ -147,24 +139,13 @@ h1 {
     </div>
   </div>
 
-  <div class="card">
-    <h2>CNN Training Status</h2>
-    <div class="status-box" id="statusBox">Initializing TensorFlow.js and training CNN on 60 samples...</div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="stats" id="metricsGrid">
-      <div class="stat"><div class="sv" id="mTrainR2">--</div><div class="sl">Train R&sup2;</div></div>
-      <div class="stat"><div class="sv" id="mValR2">--</div><div class="sl">Val R&sup2;</div></div>
-      <div class="stat"><div class="sv" id="mRMSE">--</div><div class="sl">RMSE (MPa)</div></div>
-      <div class="stat"><div class="sv" id="mEpochs">--</div><div class="sl">Best Epoch</div></div>
-    </div>
+  <div class="credits">
+    Developed by Derrick Mirindi,
+    <a href="https://www.linkedin.com/in/ngaelle-dorivice-nkanpa-moffo-86b4a7177/" target="_blank">NGAELLE DORIVICE NKANPA MOFFO</a>,
+    <a href="https://www.linkedin.com/in/david-sinkhonde-pr-eng-mw-ei-956563132/" target="_blank">David Sinkhonde</a>
   </div>
-
-  <p class="info">This tool uses TensorFlow.js to train a real 1D-CNN model in your browser on 60 concrete mix samples.<br>
-  Architecture: Conv1D(32,3,relu) &rarr; BN &rarr; Conv1D(64,3,relu) &rarr; BN &rarr; Flatten &rarr; Dense(128,relu) &rarr; Dropout(0.05) &rarr; Dense(1)<br>
-  Optimizer: Adam &nbsp;|&nbsp; Loss: MSE &nbsp;|&nbsp; Epochs: up to 800 with EarlyStopping</p>
 </div>
 <script>
-// ── Dataset: 60 samples, 6 features ──────────────────────────────────
 const rawX = [
   [550,0,1513,330,7,25],[495,55,1513,496,7,25],[440,110,1513,502,7,25],[385,165,1513,504,7,25],
   [550,0,1513,330,28,25],[495,55,1513,496,28,25],[440,110,1513,502,28,25],[385,165,1513,504,28,25],
@@ -189,160 +170,69 @@ const rawY = [
   24.75,29.17,30.2,30.77, 27.14,39.033,40.25,41.52, 29.55,40.98,41.59,42.66,
   23.32,29.79,30.89,31.97, 26.48,40.324,41.81,42.8, 27.27,41.56,42.52,43.32
 ];
-
-// ── Normalization (z-score per feature) ───────────────────────────────
 const nFeat = 6;
 const means = new Array(nFeat).fill(0);
 const stds  = new Array(nFeat).fill(0);
 const N = rawX.length;
-for(let j=0;j<nFeat;j++){
-  for(let i=0;i<N;i++) means[j]+=rawX[i][j];
-  means[j]/=N;
-}
-for(let j=0;j<nFeat;j++){
-  for(let i=0;i<N;i++) stds[j]+=(rawX[i][j]-means[j])**2;
-  stds[j]=Math.sqrt(stds[j]/N)||1;
-}
+for(let j=0;j<nFeat;j++){ for(let i=0;i<N;i++) means[j]+=rawX[i][j]; means[j]/=N; }
+for(let j=0;j<nFeat;j++){ for(let i=0;i<N;i++) stds[j]+=(rawX[i][j]-means[j])**2; stds[j]=Math.sqrt(stds[j]/N)||1; }
 const yMean = rawY.reduce((a,b)=>a+b,0)/N;
 const yStd  = Math.sqrt(rawY.reduce((a,b)=>a+(b-yMean)**2,0)/N)||1;
-
 function normalizeX(row){ return row.map((v,i)=>(v-means[i])/stds[i]); }
-function normalizeY(v){ return (v-yMean)/yStd; }
 function denormalizeY(v){ return v*yStd+yMean; }
-
-// ── Train / val split (80/20 stratified) ─────────────────────────────
-const indices = Array.from({length:N},(_,i)=>i);
-const valIdx  = indices.filter(i=>i%5===0);
-const trIdx   = indices.filter(i=>i%5!==0);
-
-const Xtr = trIdx.map(i=>normalizeX(rawX[i]));
-const Ytr = trIdx.map(i=>normalizeY(rawY[i]));
+const valIdx = Array.from({length:N},(_,i)=>i).filter(i=>i%5===0);
+const trIdx  = Array.from({length:N},(_,i)=>i).filter(i=>i%5!==0);
+const Xtr  = trIdx.map(i=>normalizeX(rawX[i]));
+const Ytr  = trIdx.map(i=>(rawY[i]-yMean)/yStd);
 const Xval = valIdx.map(i=>normalizeX(rawX[i]));
-const Yval = valIdx.map(i=>normalizeY(rawY[i]));
-
-// ── Build 1D-CNN matching architecture ───────────────────────────────
-let model = null;
-let trained = false;
-
+const Yval = valIdx.map(i=>(rawY[i]-yMean)/yStd);
+let model = null, trained = false;
 async function buildAndTrain(){
-  const statusEl  = document.getElementById('statusBox');
-  const progressEl= document.getElementById('progressFill');
-  const btn       = document.getElementById('predictBtn');
-
-  statusEl.textContent = 'Building 1D-CNN: Conv1D(32)→BN→Conv1D(64)→BN→Dense(128)→Dropout(0.05)→Dense(1)...';
-
-  // Reshape to [samples, features, 1] for Conv1D
-  const xTr  = tf.tensor3d(Xtr.map(r=>[...r.map(v=>[v])]));
-  const yTr  = tf.tensor2d(Ytr, [Ytr.length,1]);
-  const xVal = tf.tensor3d(Xval.map(r=>[...r.map(v=>[v])]));
-  const yVal = tf.tensor2d(Yval, [Yval.length,1]);
-
+  const btn = document.getElementById('predictBtn');
+  const xTr  = tf.tensor3d(Xtr.map(r=>r.map(v=>[v])));
+  const yTr  = tf.tensor2d(Ytr,[Ytr.length,1]);
+  const xVal = tf.tensor3d(Xval.map(r=>r.map(v=>[v])));
+  const yVal = tf.tensor2d(Yval,[Yval.length,1]);
   model = tf.sequential();
-  model.add(tf.layers.conv1d({filters:32, kernelSize:3, activation:'relu', padding:'same', inputShape:[nFeat,1]}));
+  model.add(tf.layers.conv1d({filters:32,kernelSize:3,activation:'relu',padding:'same',inputShape:[nFeat,1]}));
   model.add(tf.layers.batchNormalization());
-  model.add(tf.layers.conv1d({filters:64, kernelSize:3, activation:'relu', padding:'same'}));
+  model.add(tf.layers.conv1d({filters:64,kernelSize:3,activation:'relu',padding:'same'}));
   model.add(tf.layers.batchNormalization());
   model.add(tf.layers.flatten());
-  model.add(tf.layers.dense({units:128, activation:'relu'}));
+  model.add(tf.layers.dense({units:128,activation:'relu'}));
   model.add(tf.layers.dropout({rate:0.05}));
   model.add(tf.layers.dense({units:1}));
-  model.compile({optimizer: tf.train.adam(0.005), loss:'meanSquaredError'});
-
-  const maxEpochs = 800;
-  const patience  = 80;
-  let bestValLoss = Infinity;
-  let bestWeights = null;
-  let noImprove   = 0;
-  let bestEpoch   = 0;
-  let lr = 0.005;
-  let lrNoImprove = 0;
-
-  statusEl.textContent = 'Training CNN... (epoch 0 / 800)';
-
-  for(let epoch=0; epoch<maxEpochs; epoch++){
-    const h = await model.fit(xTr, yTr, {
-      epochs:1, batchSize:20,
-      validationData:[xVal,yVal],
-      verbose:0
-    });
-    const valLoss = h.history.val_loss[0];
-    progressEl.style.width = Math.min(100,(epoch/maxEpochs)*100).toFixed(1)+'%';
-    if(epoch%20===0) statusEl.textContent = `Training CNN... epoch ${epoch+1}/800 | val_loss=${valLoss.toFixed(4)}`;
-    if(valLoss < bestValLoss){
-      bestValLoss = valLoss;
-      bestEpoch   = epoch+1;
-      bestWeights = model.getWeights().map(w=>w.clone());
-      noImprove   = 0;
-      lrNoImprove = 0;
-    } else {
-      noImprove++;
-      lrNoImprove++;
-      if(lrNoImprove>=40){ lr*=0.4; model.compile({optimizer:tf.train.adam(lr),loss:'meanSquaredError'}); lrNoImprove=0; }
-      if(noImprove>=patience) break;
-    }
+  model.compile({optimizer:tf.train.adam(0.005),loss:'meanSquaredError'});
+  const patience=80; let bestVal=Infinity,bestW=null,noImp=0,bestEp=0,lr=0.005,lrNI=0;
+  for(let ep=0;ep<800;ep++){
+    const h=await model.fit(xTr,yTr,{epochs:1,batchSize:20,validationData:[xVal,yVal],verbose:0});
+    const vl=h.history.val_loss[0];
+    if(vl<bestVal){bestVal=vl;bestEp=ep+1;bestW=model.getWeights().map(w=>w.clone());noImp=0;lrNI=0;}
+    else{noImp++;lrNI++;if(lrNI>=40){lr*=0.4;model.compile({optimizer:tf.train.adam(lr),loss:'meanSquaredError'});lrNI=0;}if(noImp>=patience)break;}
   }
-
-  // Restore best weights
-  if(bestWeights) model.setWeights(bestWeights);
-
-  // ── Compute metrics ────────────────────────────────────────────────
-  const predTr  = model.predict(xTr).dataSync();
-  const predVal = model.predict(xVal).dataSync();
-
-  function r2(yt, yp){
-    const mu = yt.reduce((a,b)=>a+b,0)/yt.length;
-    const ss_tot = yt.reduce((a,b)=>a+(b-mu)**2,0);
-    const ss_res = yt.map((v,i)=>v-yp[i]).reduce((a,b)=>a+b**2,0);
-    return 1-ss_res/ss_tot;
-  }
-  function rmse(yt, yp){
-    return Math.sqrt(yt.map((v,i)=>(v-yp[i])**2).reduce((a,b)=>a+b,0)/yt.length);
-  }
-
-  const YtrDen  = Ytr.map(v=>denormalizeY(v));
-  const YvalDen = Yval.map(v=>denormalizeY(v));
-  const pTrDen  = Array.from(predTr).map(v=>denormalizeY(v));
-  const pValDen = Array.from(predVal).map(v=>denormalizeY(v));
-
-  const trainR2 = r2(YtrDen, pTrDen);
-  const valR2   = r2(YvalDen, pValDen);
-  const testRMSE= rmse(YvalDen, pValDen);
-
-  document.getElementById('mTrainR2').textContent = trainR2.toFixed(4);
-  document.getElementById('mValR2').textContent   = valR2.toFixed(4);
-  document.getElementById('mRMSE').textContent    = testRMSE.toFixed(4);
-  document.getElementById('mEpochs').textContent  = bestEpoch;
-
-  progressEl.style.width = '100%';
-  statusEl.textContent = `CNN trained! Best epoch: ${bestEpoch} | Train R²: ${trainR2.toFixed(4)} | Val R²: ${valR2.toFixed(4)}`;
-  statusEl.style.color = '#64ffda';
-
-  btn.disabled = false;
-  btn.textContent = 'Predict Compressive Strength';
-  trained = true;
-
-  xTr.dispose(); yTr.dispose(); xVal.dispose(); yVal.dispose();
+  if(bestW) model.setWeights(bestW);
+  xTr.dispose();yTr.dispose();xVal.dispose();yVal.dispose();
+  btn.disabled=false;
+  btn.textContent='Predict Compressive Strength';
+  trained=true;
 }
-
 async function predict(){
-  if(!trained){ alert('Model is still training. Please wait.'); return; }
-  const ids = ['cement','silica','sand','water','age','temp'];
-  const vals = ids.map(id=>{ const v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; });
-  if(vals.includes(null)){ alert('Please fill in all 6 input fields.'); return; }
-  const xNorm = normalizeX(vals);
-  const xTensor = tf.tensor3d([xNorm.map(v=>[v])]);
-  const predNorm = model.predict(xTensor).dataSync()[0];
-  xTensor.dispose();
-  const pred = Math.max(10, Math.min(60, denormalizeY(predNorm)));
-  document.getElementById('predValue').textContent = pred.toFixed(2);
-  const pct = ((pred-10)/50*100).toFixed(1);
-  document.getElementById('strengthFill').style.width = pct+'%';
-  let grade = pred<20?'Very Low':pred<30?'Low':pred<40?'Moderate':pred<50?'High':'Very High';
-  document.getElementById('strengthLabel').textContent = grade+' Strength';
+  if(!trained){alert('Model is still training. Please wait.');return;}
+  const ids=['cement','silica','sand','water','age','temp'];
+  const vals=ids.map(id=>{const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;});
+  if(vals.includes(null)){alert('Please fill in all 6 input fields.');return;}
+  const xN=normalizeX(vals);
+  const xT=tf.tensor3d([xN.map(v=>[v])]);
+  const pN=model.predict(xT).dataSync()[0];
+  xT.dispose();
+  const pred=Math.max(10,Math.min(60,denormalizeY(pN)));
+  document.getElementById('predValue').textContent=pred.toFixed(2);
+  document.getElementById('strengthFill').style.width=((pred-10)/50*100).toFixed(1)+'%';
+  const g=pred<20?'Very Low':pred<30?'Low':pred<40?'Moderate':pred<50?'High':'Very High';
+  document.getElementById('strengthLabel').textContent=g+' Strength';
   document.getElementById('result').style.display='block';
 }
-
-window.addEventListener('load', buildAndTrain);
+window.addEventListener('load',buildAndTrain);
 </script>
 </body>
 </html>
