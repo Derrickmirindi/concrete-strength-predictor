@@ -1,343 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CNN Concrete Compressive Strength Predictor</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-      min-height: 100vh;
-      color: #e0e0e0;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 920px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 2em;
-      margin-bottom: 8px;
-      background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #9aa7c7;
-      margin-bottom: 28px;
-      font-size: 0.98em;
-      line-height: 1.6;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 24px;
-    }
-
-    .card h2 {
-      color: #64ffda;
-      margin-bottom: 18px;
-      font-size: 1.2em;
-      border-bottom: 1px solid rgba(100, 255, 218, 0.2);
-      padding-bottom: 10px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 680px) {
-      .grid { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: 1fr 1fr; }
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .field label {
-      font-size: 0.9em;
-      color: #aeb8d0;
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-
-    .field input {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      padding: 11px 12px;
-      color: #e0e0e0;
-      font-size: 1em;
-      transition: border-color 0.25s, box-shadow 0.25s;
-    }
-
-    .field input:focus {
-      outline: none;
-      border-color: #64ffda;
-      box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.12);
-    }
-
-    .ranges {
-      font-size: 0.76em;
-      color: #7f8fb3;
-      margin-top: 5px;
-      line-height: 1.4;
-    }
-
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #00d2ff, #3a7bd5);
-      color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      font-size: 1.05em;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      margin-top: 22px;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 210, 255, 0.3);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .result-box {
-      text-align: center;
-      padding: 24px;
-      background: rgba(100, 255, 218, 0.05);
-      border: 1px solid rgba(100, 255, 218, 0.2);
-      border-radius: 12px;
-      margin-top: 22px;
-      display: none;
-    }
-
-    .result-box .value {
-      font-size: 2.5em;
-      font-weight: 800;
-      color: #64ffda;
-      margin: 10px 0;
-    }
-
-    .result-box .label {
-      color: #9aa7c7;
-      font-size: 0.95em;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .stat {
-      text-align: center;
-      padding: 12px 10px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-    }
-
-    .stat .sv {
-      font-size: 1.05em;
-      font-weight: 700;
-      color: #00d2ff;
-    }
-
-    .stat .sl {
-      font-size: 0.72em;
-      color: #7182a7;
-      margin-top: 4px;
-    }
-
-    .info {
-      font-size: 0.83em;
-      color: #7f8fb3;
-      text-align: center;
-      margin-top: 18px;
-      line-height: 1.7;
-    }
-
-    .warning {
-      margin-top: 14px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(255, 193, 7, 0.10);
-      border: 1px solid rgba(255, 193, 7, 0.18);
-      color: #ffe08a;
-      display: none;
-      line-height: 1.5;
-      font-size: 0.9em;
-    }
-
-    .footer-note {
-      margin-top: 14px;
-      text-align: center;
-      color: #6c7da3;
-      font-size: 0.78em;
-      line-height: 1.5;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CNN Concrete Compressive Strength Predictor</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  min-height: 100vh;
+  color: #e0e0e0;
+  padding: 20px;
+}
+.container { max-width: 920px; margin: 0 auto; }
+h1 {
+  text-align: center;
+  font-size: 2em;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subtitle { text-align: center; color: #8892b0; margin-bottom: 30px; font-size: 0.95em; }
+.card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 25px;
+}
+.card h2 { color: #64ffda; margin-bottom: 20px; font-size: 1.3em; border-bottom: 1px solid rgba(100,255,218,0.2); padding-bottom: 10px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+@media(max-width:600px){ .grid { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; }
+.field label { font-size: 0.85em; color: #8892b0; margin-bottom: 5px; font-weight: 600; }
+.field input {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e0e0e0;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+.field input:focus { outline: none; border-color: #64ffda; }
+.field .unit { font-size: 0.75em; color: #5a6a8a; margin-top: 3px; }
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 20px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,210,255,0.3); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.result-box {
+  text-align: center;
+  padding: 25px;
+  background: rgba(100,255,218,0.05);
+  border: 1px solid rgba(100,255,218,0.2);
+  border-radius: 12px;
+  margin-top: 20px;
+  display: none;
+}
+.result-box .value { font-size: 2.5em; font-weight: 800; color: #64ffda; margin: 10px 0; }
+.result-box .label { color: #8892b0; font-size: 0.9em; }
+.strength-bar { height: 12px; border-radius: 6px; margin: 12px 0; background: rgba(255,255,255,0.1); overflow: hidden; }
+.strength-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: width 0.6s ease; }
+.strength-label { font-size: 0.85em; color: #64ffda; margin-top: 4px; }
+.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 15px; }
+.stat { text-align: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+.stat .sv { font-size: 1.1em; font-weight: 700; color: #00d2ff; }
+.stat .sl { font-size: 0.7em; color: #5a6a8a; margin-top: 3px; }
+.status-box {
+  text-align: center;
+  padding: 15px;
+  background: rgba(0,210,255,0.05);
+  border: 1px solid rgba(0,210,255,0.2);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 0.9em;
+  color: #8892b0;
+}
+.progress-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: width 0.3s; }
+.info { font-size: 0.8em; color: #5a6a8a; text-align: center; margin-top: 20px; line-height: 1.6; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>CNN Concrete Compressive Strength Predictor</h1>
-    <p class="subtitle">
-      1D Convolutional Neural Network interface revised for a 6-variable concrete dataset:
-      Cement, Silica Fume, Sand, Water, Age, and Temperature.[page:2][page:58]
-    </p>
+<div class="container">
+  <h1>CNN Concrete Compressive Strength Predictor</h1>
+  <p class="subtitle">1D-CNN trained with TensorFlow.js &mdash; 6 mix variables &mdash; Conv1D(32) &rarr; Conv1D(64) &rarr; Dense(128) &rarr; Output</p>
 
-    <div class="card">
-      <h2>Input Parameters</h2>
-      <div class="grid">
-        <div class="field">
-          <label for="cement">Cement</label>
-          <input id="cement" type="number" step="0.1" placeholder="e.g. 550" />
-          <div class="ranges">Unit: kg | Example document values include 550.0.[page:2]</div>
-        </div>
-
-        <div class="field">
-          <label for="silica">Silica Fume</label>
-          <input id="silica" type="number" step="0.1" placeholder="e.g. 0" />
-          <div class="ranges">Unit: kg | Example document values include 0.0.[page:2]</div>
-        </div>
-
-        <div class="field">
-          <label for="sand">Sand</label>
-          <input id="sand" type="number" step="0.1" placeholder="e.g. 1513" />
-          <div class="ranges">Unit: kg | Example document values include 1513.0.[page:2]</div>
-        </div>
-
-        <div class="field">
-          <label for="water">Water</label>
-          <input id="water" type="number" step="0.1" placeholder="e.g. 330" />
-          <div class="ranges">Unit: kg | Example document values include 330.0.[page:2]</div>
-        </div>
-
-        <div class="field">
-          <label for="age">Age</label>
-          <input id="age" type="number" step="1" placeholder="e.g. 7" />
-          <div class="ranges">Unit: day | Example document values include 7.0.[page:2]</div>
-        </div>
-
-        <div class="field">
-          <label for="temp">Temperature</label>
-          <input id="temp" type="number" step="0.1" placeholder="e.g. 25" />
-          <div class="ranges">Unit: ℃ | Example document values include 25.0.[page:2]</div>
-        </div>
+  <div class="card">
+    <h2>Input Parameters</h2>
+    <div class="grid">
+      <div class="field">
+        <label>Cement (kg/m&sup3;)</label>
+        <input type="number" id="cement" step="any" placeholder="e.g. 440" />
+        <span class="unit">Range: 385 &ndash; 550</span>
       </div>
-
-      <button class="btn" onclick="predictStrength()">Predict Compressive Strength</button>
-
-      <div id="warningBox" class="warning"></div>
-
-      <div id="resultBox" class="result-box">
-        <div class="label">Predicted Output</div>
-        <div id="resultValue" class="value">--</div>
-        <div class="label">Compressive strength (MPa)</div>
-
-        <div class="stats">
-          <div class="stat">
-            <div class="sv">CNN</div>
-            <div class="sl">Model</div>
-          </div>
-          <div class="stat">
-            <div class="sv" id="r2Value">Add later</div>
-            <div class="sl">Test R²</div>
-          </div>
-          <div class="stat">
-            <div class="sv" id="rmseValue">Add later</div>
-            <div class="sl">RMSE</div>
-          </div>
-          <div class="stat">
-            <div class="sv">6</div>
-            <div class="sl">Inputs</div>
-          </div>
-        </div>
+      <div class="field">
+        <label>Silica Fume (kg/m&sup3;)</label>
+        <input type="number" id="silica" step="any" placeholder="e.g. 55" />
+        <span class="unit">Range: 0 &ndash; 165</span>
       </div>
-
-      <p class="info">
-        This page now matches the 6-input dataset structure from your document, but the browser can only give a true CNN prediction if you connect it to the actual trained model weights or export the preprocessing and prediction logic into JavaScript.[page:2][page:58]
-      </p>
-
-      <p class="footer-note">
-        Until you wire in the trained model, the page below uses a placeholder engineering estimate to keep the interface testable.[page:58]
-      </p>
+      <div class="field">
+        <label>Sand (kg/m&sup3;)</label>
+        <input type="number" id="sand" step="any" placeholder="e.g. 1513" />
+        <span class="unit">Range: 1513 (fixed)</span>
+      </div>
+      <div class="field">
+        <label>Water (kg/m&sup3;)</label>
+        <input type="number" id="water" step="any" placeholder="e.g. 496" />
+        <span class="unit">Range: 330 &ndash; 504</span>
+      </div>
+      <div class="field">
+        <label>Age (days)</label>
+        <input type="number" id="age" step="1" placeholder="e.g. 28" />
+        <span class="unit">Range: 7 &ndash; 56</span>
+      </div>
+      <div class="field">
+        <label>Temperature (&deg;C)</label>
+        <input type="number" id="temp" step="any" placeholder="e.g. 200" />
+        <span class="unit">Range: 25 &ndash; 400</span>
+      </div>
+    </div>
+    <button class="btn" id="predictBtn" onclick="predict()" disabled>Training CNN model...</button>
+    <div class="result-box" id="result">
+      <div class="label">Predicted Compressive Strength</div>
+      <div class="value" id="predValue">--</div>
+      <div class="label">MPa (Megapascals)</div>
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0%"></div></div>
+      <div class="strength-label" id="strengthLabel"></div>
     </div>
   </div>
 
-  <script>
-    function showWarning(message) {
-      const box = document.getElementById('warningBox');
-      box.style.display = 'block';
-      box.textContent = message;
+  <div class="card">
+    <h2>CNN Training Status</h2>
+    <div class="status-box" id="statusBox">Initializing TensorFlow.js and training CNN on 60 samples...</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="stats" id="metricsGrid">
+      <div class="stat"><div class="sv" id="mTrainR2">--</div><div class="sl">Train R&sup2;</div></div>
+      <div class="stat"><div class="sv" id="mValR2">--</div><div class="sl">Val R&sup2;</div></div>
+      <div class="stat"><div class="sv" id="mRMSE">--</div><div class="sl">RMSE (MPa)</div></div>
+      <div class="stat"><div class="sv" id="mEpochs">--</div><div class="sl">Best Epoch</div></div>
+    </div>
+  </div>
+
+  <p class="info">This tool uses TensorFlow.js to train a real 1D-CNN model in your browser on 60 concrete mix samples.<br>
+  Architecture: Conv1D(32,3,relu) &rarr; BN &rarr; Conv1D(64,3,relu) &rarr; BN &rarr; Flatten &rarr; Dense(128,relu) &rarr; Dropout(0.05) &rarr; Dense(1)<br>
+  Optimizer: Adam &nbsp;|&nbsp; Loss: MSE &nbsp;|&nbsp; Epochs: up to 800 with EarlyStopping</p>
+</div>
+<script>
+// ── Dataset: 60 samples, 6 features ──────────────────────────────────
+const rawX = [
+  [550,0,1513,330,7,25],[495,55,1513,496,7,25],[440,110,1513,502,7,25],[385,165,1513,504,7,25],
+  [550,0,1513,330,28,25],[495,55,1513,496,28,25],[440,110,1513,502,28,25],[385,165,1513,504,28,25],
+  [550,0,1513,330,56,25],[495,55,1513,496,56,25],[440,110,1513,502,56,25],[385,165,1513,504,56,25],
+  [550,0,1513,330,7,100],[495,55,1513,496,7,100],[440,110,1513,502,7,100],[385,165,1513,504,7,100],
+  [550,0,1513,330,28,100],[495,55,1513,496,28,100],[440,110,1513,502,28,100],[385,165,1513,504,28,100],
+  [550,0,1513,330,56,100],[495,55,1513,496,56,100],[440,110,1513,502,56,100],[385,165,1513,504,56,100],
+  [550,0,1513,330,7,200],[495,55,1513,496,7,200],[440,110,1513,502,7,200],[385,165,1513,504,7,200],
+  [550,0,1513,330,28,200],[495,55,1513,496,28,200],[440,110,1513,502,28,200],[385,165,1513,504,28,200],
+  [550,0,1513,330,56,200],[495,55,1513,496,56,200],[440,110,1513,502,56,200],[385,165,1513,504,56,200],
+  [550,0,1513,330,7,300],[495,55,1513,496,7,300],[440,110,1513,502,7,300],[385,165,1513,504,7,300],
+  [550,0,1513,330,28,300],[495,55,1513,496,28,300],[440,110,1513,502,28,300],[385,165,1513,504,28,300],
+  [550,0,1513,330,56,300],[495,55,1513,496,56,300],[440,110,1513,502,56,300],[385,165,1513,504,56,300],
+  [550,0,1513,330,7,400],[495,55,1513,496,7,400],[440,110,1513,502,7,400],[385,165,1513,504,7,400],
+  [550,0,1513,330,28,400],[495,55,1513,496,28,400],[440,110,1513,502,28,400],[385,165,1513,504,28,400],
+  [550,0,1513,330,56,400],[495,55,1513,496,56,400],[440,110,1513,502,56,400],[385,165,1513,504,56,400]
+];
+const rawY = [
+  25.4,25.56,26.5,26.97, 29.22,34.21,35.97,37.2, 31.75,35.4,36.4,38.93,
+  25.50,26.14,27.21,27.76, 29.68,36.71,37.56,39.6, 31.92,37.45,38.7,40.56,
+  25.68,28.01,28.84,29.85, 29.78,37.5,38.36,41.44, 32.02,39.44,40.79,41.16,
+  24.75,29.17,30.2,30.77, 27.14,39.033,40.25,41.52, 29.55,40.98,41.59,42.66,
+  23.32,29.79,30.89,31.97, 26.48,40.324,41.81,42.8, 27.27,41.56,42.52,43.32
+];
+
+// ── Normalization (z-score per feature) ───────────────────────────────
+const nFeat = 6;
+const means = new Array(nFeat).fill(0);
+const stds  = new Array(nFeat).fill(0);
+const N = rawX.length;
+for(let j=0;j<nFeat;j++){
+  for(let i=0;i<N;i++) means[j]+=rawX[i][j];
+  means[j]/=N;
+}
+for(let j=0;j<nFeat;j++){
+  for(let i=0;i<N;i++) stds[j]+=(rawX[i][j]-means[j])**2;
+  stds[j]=Math.sqrt(stds[j]/N)||1;
+}
+const yMean = rawY.reduce((a,b)=>a+b,0)/N;
+const yStd  = Math.sqrt(rawY.reduce((a,b)=>a+(b-yMean)**2,0)/N)||1;
+
+function normalizeX(row){ return row.map((v,i)=>(v-means[i])/stds[i]); }
+function normalizeY(v){ return (v-yMean)/yStd; }
+function denormalizeY(v){ return v*yStd+yMean; }
+
+// ── Train / val split (80/20 stratified) ─────────────────────────────
+const indices = Array.from({length:N},(_,i)=>i);
+const valIdx  = indices.filter(i=>i%5===0);
+const trIdx   = indices.filter(i=>i%5!==0);
+
+const Xtr = trIdx.map(i=>normalizeX(rawX[i]));
+const Ytr = trIdx.map(i=>normalizeY(rawY[i]));
+const Xval = valIdx.map(i=>normalizeX(rawX[i]));
+const Yval = valIdx.map(i=>normalizeY(rawY[i]));
+
+// ── Build 1D-CNN matching architecture ───────────────────────────────
+let model = null;
+let trained = false;
+
+async function buildAndTrain(){
+  const statusEl  = document.getElementById('statusBox');
+  const progressEl= document.getElementById('progressFill');
+  const btn       = document.getElementById('predictBtn');
+
+  statusEl.textContent = 'Building 1D-CNN: Conv1D(32)→BN→Conv1D(64)→BN→Dense(128)→Dropout(0.05)→Dense(1)...';
+
+  // Reshape to [samples, features, 1] for Conv1D
+  const xTr  = tf.tensor3d(Xtr.map(r=>[...r.map(v=>[v])]));
+  const yTr  = tf.tensor2d(Ytr, [Ytr.length,1]);
+  const xVal = tf.tensor3d(Xval.map(r=>[...r.map(v=>[v])]));
+  const yVal = tf.tensor2d(Yval, [Yval.length,1]);
+
+  model = tf.sequential();
+  model.add(tf.layers.conv1d({filters:32, kernelSize:3, activation:'relu', padding:'same', inputShape:[nFeat,1]}));
+  model.add(tf.layers.batchNormalization());
+  model.add(tf.layers.conv1d({filters:64, kernelSize:3, activation:'relu', padding:'same'}));
+  model.add(tf.layers.batchNormalization());
+  model.add(tf.layers.flatten());
+  model.add(tf.layers.dense({units:128, activation:'relu'}));
+  model.add(tf.layers.dropout({rate:0.05}));
+  model.add(tf.layers.dense({units:1}));
+  model.compile({optimizer: tf.train.adam(0.005), loss:'meanSquaredError'});
+
+  const maxEpochs = 800;
+  const patience  = 80;
+  let bestValLoss = Infinity;
+  let bestWeights = null;
+  let noImprove   = 0;
+  let bestEpoch   = 0;
+  let lr = 0.005;
+  let lrNoImprove = 0;
+
+  statusEl.textContent = 'Training CNN... (epoch 0 / 800)';
+
+  for(let epoch=0; epoch<maxEpochs; epoch++){
+    const h = await model.fit(xTr, yTr, {
+      epochs:1, batchSize:20,
+      validationData:[xVal,yVal],
+      verbose:0
+    });
+    const valLoss = h.history.val_loss[0];
+    progressEl.style.width = Math.min(100,(epoch/maxEpochs)*100).toFixed(1)+'%';
+    if(epoch%20===0) statusEl.textContent = `Training CNN... epoch ${epoch+1}/800 | val_loss=${valLoss.toFixed(4)}`;
+    if(valLoss < bestValLoss){
+      bestValLoss = valLoss;
+      bestEpoch   = epoch+1;
+      bestWeights = model.getWeights().map(w=>w.clone());
+      noImprove   = 0;
+      lrNoImprove = 0;
+    } else {
+      noImprove++;
+      lrNoImprove++;
+      if(lrNoImprove>=40){ lr*=0.4; model.compile({optimizer:tf.train.adam(lr),loss:'meanSquaredError'}); lrNoImprove=0; }
+      if(noImprove>=patience) break;
     }
+  }
 
-    function hideWarning() {
-      const box = document.getElementById('warningBox');
-      box.style.display = 'none';
-      box.textContent = '';
-    }
+  // Restore best weights
+  if(bestWeights) model.setWeights(bestWeights);
 
-    function predictStrength() {
-      hideWarning();
+  // ── Compute metrics ────────────────────────────────────────────────
+  const predTr  = model.predict(xTr).dataSync();
+  const predVal = model.predict(xVal).dataSync();
 
-      const cement = parseFloat(document.getElementById('cement').value);
-      const silica = parseFloat(document.getElementById('silica').value);
-      const sand = parseFloat(document.getElementById('sand').value);
-      const water = parseFloat(document.getElementById('water').value);
-      const age = parseFloat(document.getElementById('age').value);
-      const temp = parseFloat(document.getElementById('temp').value);
+  function r2(yt, yp){
+    const mu = yt.reduce((a,b)=>a+b,0)/yt.length;
+    const ss_tot = yt.reduce((a,b)=>a+(b-mu)**2,0);
+    const ss_res = yt.map((v,i)=>v-yp[i]).reduce((a,b)=>a+b**2,0);
+    return 1-ss_res/ss_tot;
+  }
+  function rmse(yt, yp){
+    return Math.sqrt(yt.map((v,i)=>(v-yp[i])**2).reduce((a,b)=>a+b,0)/yt.length);
+  }
 
-      const values = [cement, silica, sand, water, age, temp];
-      if (values.some(v => Number.isNaN(v))) {
-        showWarning('Please enter all 6 input values before predicting.');
-        return;
-      }
+  const YtrDen  = Ytr.map(v=>denormalizeY(v));
+  const YvalDen = Yval.map(v=>denormalizeY(v));
+  const pTrDen  = Array.from(predTr).map(v=>denormalizeY(v));
+  const pValDen = Array.from(predVal).map(v=>denormalizeY(v));
 
-      if (water <= 0 || cement < 0 || silica < 0 || sand < 0 || age <= 0) {
-        showWarning('Please enter physically valid non-negative material values, with positive water and age.');
-        return;
-      }
+  const trainR2 = r2(YtrDen, pTrDen);
+  const valR2   = r2(YvalDen, pValDen);
+  const testRMSE= rmse(YvalDen, pValDen);
 
-      const waterBinder = water / Math.max(cement + silica, 1);
-      const maturityFactor = Math.log(age + 1) * 7.5;
-      const binderFactor = 0.060 * cement + 0.045 * silica;
-      const waterPenalty = 18 * waterBinder;
-      const tempFactor = 0.22 * temp;
-      const sandPenalty = 0.0025 * Math.max(sand - 1400, 0);
+  document.getElementById('mTrainR2').textContent = trainR2.toFixed(4);
+  document.getElementById('mValR2').textContent   = valR2.toFixed(4);
+  document.getElementById('mRMSE').textContent    = testRMSE.toFixed(4);
+  document.getElementById('mEpochs').textContent  = bestEpoch;
 
-      let prediction = binderFactor + maturityFactor + tempFactor - waterPenalty - sandPenalty;
+  progressEl.style.width = '100%';
+  statusEl.textContent = `CNN trained! Best epoch: ${bestEpoch} | Train R²: ${trainR2.toFixed(4)} | Val R²: ${valR2.toFixed(4)}`;
+  statusEl.style.color = '#64ffda';
 
-      prediction = Math.max(5, Math.min(120, prediction));
+  btn.disabled = false;
+  btn.textContent = 'Predict Compressive Strength';
+  trained = true;
 
-      document.getElementById('resultValue').textContent = prediction.toFixed(2);
-      document.getElementById('r2Value').textContent = 'Update';
-      document.getElementById('rmseValue').textContent = 'Update';
-      document.getElementById('resultBox').style.display = 'block';
-    }
-  </script>
+  xTr.dispose(); yTr.dispose(); xVal.dispose(); yVal.dispose();
+}
+
+async function predict(){
+  if(!trained){ alert('Model is still training. Please wait.'); return; }
+  const ids = ['cement','silica','sand','water','age','temp'];
+  const vals = ids.map(id=>{ const v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; });
+  if(vals.includes(null)){ alert('Please fill in all 6 input fields.'); return; }
+  const xNorm = normalizeX(vals);
+  const xTensor = tf.tensor3d([xNorm.map(v=>[v])]);
+  const predNorm = model.predict(xTensor).dataSync()[0];
+  xTensor.dispose();
+  const pred = Math.max(10, Math.min(60, denormalizeY(predNorm)));
+  document.getElementById('predValue').textContent = pred.toFixed(2);
+  const pct = ((pred-10)/50*100).toFixed(1);
+  document.getElementById('strengthFill').style.width = pct+'%';
+  let grade = pred<20?'Very Low':pred<30?'Low':pred<40?'Moderate':pred<50?'High':'Very High';
+  document.getElementById('strengthLabel').textContent = grade+' Strength';
+  document.getElementById('result').style.display='block';
+}
+
+window.addEventListener('load', buildAndTrain);
+</script>
 </body>
 </html>
